@@ -3,7 +3,7 @@ module.exports = {
     bestHand: bestHand,
     isFlush: isFlush,
     isStraight: isStraight,
-    isRoyal: isRoyal,
+    isStraightFlush: isStraightFlush,
     isFullHouse: isFullHouse,
     isTwoPair: isTwoPair,
     isXOfKind: isXOfKind
@@ -20,7 +20,7 @@ function cardsFactory (n) {
         3: [{s:'h',v:1},{s:'s',v:5},{s:'h',v:13},{s:'h',v:11},{s:'h',v:10},{s:'s',v:12},{s:'h',v:7}], 
         4: [{s:'h',v:1},{s:'s',v:5},{s:'h',v:13},{s:'h',v:11},{s:'h',v:10},{s:'s',v:12},{s:'h',v:9}],
 
-        // royal
+        // straight flush
         5: [{s:'h',v:1},{s:'s',v:13},{s:'h',v:13},{s:'h',v:11},{s:'h',v:10},{s:'h',v:12},{s:'h',v:9}],
 
         // four of a kind
@@ -44,20 +44,46 @@ function cardsFactory (n) {
 function bestHand (table, hand) {
     // order cards by value
     var cards = table.concat(hand).sort(function (a, b) { return a.v - b.v; });
-    var hand = isRoyal(cards);
-    if (!hand) hand = isXOfKind(cards, 4);
-    if (!hand) hand = isFullHouse(cards);
-    if (!hand) hand = isFlush(cards);
-    if (!hand) hand = isStraight(cards);
-    if (!hand) hand = isXOfKind(cards, 3);
-    if (!hand) hand = isTwoPair(cards);
-    if (!hand) hand = isXOfKind(cards, 2);
-    if (!hand) {
+    var hand = null;
+    var type = 'none';
+    var val = 0;
+
+    if (hand = isStraightFlush(cards)) {
+        type = 'straight flush';
+        val = 9;
+    } else if (hand = isXOfKind(cards, 4)) {
+        type = 'four of a kind';
+        val = 8;
+    } else if (hand = isFullHouse(cards)) {
+        type = 'full house';
+        val = 7;
+    } else if (hand = isFlush(cards)) {
+        type = 'flush';
+        val = 6;
+    } else if (hand = isStraight(cards)) {
+        type = 'straight';
+        val = 5;
+    } else if (hand = isXOfKind(cards, 3)) {
+        type = 'three of a kind';
+        val = 4;
+    } else if (hand = isTwoPair(cards)) {
+        type = 'two pair';
+        val = 3;
+    } else if (hand = isXOfKind(cards, 2)) {
+        type = 'two of a kind';
+        val = 2;
+    } else {
         hand = cards.slice(-5);
         if (cards[0] == 1) hand = hand.slice(1).concat(cards[0]);
+        type = 'high card';
+        val = 1;
     }
 
-    return hand;
+    return {
+        hand: hand,
+        type: type,
+        val: val
+    };
 }
 
 function isFlush (cards) {
@@ -118,7 +144,7 @@ function isStraight (cards, suit) {
     return isStraight;
 }
 
-function isRoyal (cards) {
+function isStraightFlush (cards) {
     var flush = isFlush(cards);
     return flush ? isStraight(cards, flush[0].s) : false;
 }
