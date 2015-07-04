@@ -41,9 +41,9 @@ function cardsFactory (n) {
 }
 
 // returns best hand, hand type, value
-function bestHand (table, hand) {
+function bestHand (cards) {
     // order cards by value
-    var cards = table.concat(hand).sort(function (a, b) { return a.v - b.v; });
+    cards = cards.sort(function (a, b) { return a.v - b.v; });
     var hand = null;
     var type = 'none';
     var val = 0;
