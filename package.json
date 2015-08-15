@@ -1,14 +1,19 @@
 {
   "name": "hand-ranker",
+  "description": "a poker hand ranking module",
   "version": "0.1.0",
-  "description": "poker hand ranking module",
-  "main": "ranker.js",
-  "scripts": {
-    "test": "mocha"
-  },
-  "author": "Andrew Wong",
+  "author": "@kaftz",
+  "keywords": ["poker", "holdem", "hand", "ranking"],
   "license": "MIT",
   "devDependencies": {
     "mocha": "^2.2.5"
+  },
+  "main": "ranker.js",
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/kaftz/hand-ranker.git"
+  },
+  "scripts": {
+    "test": "mocha"
   }
 }
