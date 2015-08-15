@@ -1,82 +1,41 @@
-module.exports = {
-    cardsFactory: cardsFactory,
-    bestHand: bestHand,
-    isFlush: isFlush,
-    isStraight: isStraight,
-    isStraightFlush: isStraightFlush,
-    isFullHouse: isFullHouse,
-    isTwoPair: isTwoPair,
-    isXOfKind: isXOfKind
-};
-
-function cardsFactory (n) {
-    var options = {
-        // flush
-        0: [{s:'h',v:4},{s:'s',v:5},{s:'h',v:10},{s:'h',v:11},{s:'h',v:2},{s:'s',v:6},{s:'h',v:7}],
-        1: [{s:'h',v:4},{s:'h',v:1},{s:'h',v:10},{s:'h',v:11},{s:'h',v:2},{s:'h',v:2},{s:'h',v:7}],
-
-        // straight
-        2: [{s:'h',v:4},{s:'s',v:5},{s:'h',v:3},{s:'h',v:11},{s:'h',v:2},{s:'s',v:6},{s:'h',v:7}], 
-        3: [{s:'h',v:1},{s:'s',v:5},{s:'h',v:13},{s:'h',v:11},{s:'h',v:10},{s:'s',v:12},{s:'h',v:7}], 
-        4: [{s:'h',v:1},{s:'s',v:5},{s:'h',v:13},{s:'h',v:11},{s:'h',v:10},{s:'s',v:12},{s:'h',v:9}],
-
-        // straight flush
-        5: [{s:'h',v:1},{s:'s',v:13},{s:'h',v:13},{s:'h',v:11},{s:'h',v:10},{s:'h',v:12},{s:'h',v:9}],
-
-        // four of a kind
-        6: [{s:'h',v:1},{s:'s',v:2},{s:'h',v:2},{s:'h',v:11},{s:'c',v:2},{s:'d',v:2},{s:'h',v:9}],
-
-        // full house
-        7: [{s:'h',v:2},{s:'s',v:5},{s:'h',v:5},{s:'h',v:11},{s:'c',v:2},{s:'d',v:2},{s:'s',v:11}],
-
-        // two pair
-        61: [{s:'h',v:9},{s:'s',v:5},{s:'h',v:4},{s:'h',v:11},{s:'c',v:2},{s:'d',v:2},{s:'s',v:11}],
-        62: [{s:'h',v:9},{s:'s',v:5},{s:'h',v:5},{s:'h',v:11},{s:'c',v:2},{s:'d',v:2},{s:'s',v:11}],
-
-        81: [{s:'h',v:2},{s:'s',v:6},{s:'h',v:5},{s:'h',v:10},{s:'c',v:9},{s:'d',v:9},{s:'s',v:11}],
-        82: [{s:'h',v:2},{s:'s',v:6},{s:'h',v:9},{s:'h',v:10},{s:'c',v:9},{s:'d',v:9},{s:'s',v:11}]
-    };
-
-    return options[n];
-}
+exports.bestHand = bestHand;
 
 // returns best hand, hand type, value
 function bestHand (cards) {
     // order cards by value
     cards = cards.sort(function (a, b) { return a.v - b.v; });
-    var hand = null;
-    var type = 'none';
-    var val = 0;
+
+    var hand, type, val;
 
     if (hand = isStraightFlush(cards)) {
         type = 'straight flush';
-        val = 9;
+        val = 8;
     } else if (hand = isXOfKind(cards, 4)) {
         type = 'four of a kind';
-        val = 8;
+        val = 7;
     } else if (hand = isFullHouse(cards)) {
         type = 'full house';
-        val = 7;
+        val = 6;
     } else if (hand = isFlush(cards)) {
         type = 'flush';
-        val = 6;
+        val = 5;
     } else if (hand = isStraight(cards)) {
         type = 'straight';
-        val = 5;
+        val = 4;
     } else if (hand = isXOfKind(cards, 3)) {
         type = 'three of a kind';
-        val = 4;
+        val = 3;
     } else if (hand = isTwoPair(cards)) {
         type = 'two pair';
-        val = 3;
+        val = 2;
     } else if (hand = isXOfKind(cards, 2)) {
         type = 'two of a kind';
-        val = 2;
+        val = 1;
     } else {
         hand = cards.slice(-5);
         if (cards[0] == 1) hand = hand.slice(1).concat(cards[0]);
         type = 'high card';
-        val = 1;
+        val = 0;
     }
 
     return {
@@ -100,7 +59,6 @@ function isFlush (cards) {
         break;
     }
 
-    // check for ace!
     return isFlush;
 }
 

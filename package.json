@@ -1,11 +1,14 @@
 {
   "name": "hand-ranker",
   "version": "0.1.0",
-  "description": "",
+  "description": "poker hand ranking module",
   "main": "ranker.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
-  "author": "",
-  "license": "MIT"
+  "author": "Andrew Wong",
+  "license": "MIT",
+  "devDependencies": {
+    "mocha": "^2.2.5"
+  }
 }
