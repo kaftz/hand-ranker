@@ -10,9 +10,9 @@ npm install hand-ranker
 
 ## usage
 
-A card is represented by an object with properties 's' and 'v', where 's' describes the suit (s = spade, h = heart, c = club, d = diamond) and 'v' describes the value (1:ace - 13:king).
+A card is represented by an object with properties 's' and 'v', where 's' describes the suit (s = spade, h = heart, c = club, d = diamond) and 'v' describes the value (1 = ace, 13 = king).
 
-`bestHand(cards)` - returns a results object with the best 5-card hand (sorted), a string describing the hand, an integer hand value (0 - high card, 8 - straight flush)
+`bestHand(cards)` - returns a results object with the best 5-card hand (sorted), a string describing the hand, an integer hand value (0 = high card, 8 = straight flush)
 
 ```javascript
 var ranker = require('hand-ranker');
