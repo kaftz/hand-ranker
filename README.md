@@ -37,7 +37,7 @@ result:
     { s: 's', v: 11 },
     { s: 's', v: 12 },
     { s: 's', v: 13 },
-    { s: 'c', v: 1 }
+    { s: 's', v: 1 }
   ],
   type: 'straight flush',
   val: 8
