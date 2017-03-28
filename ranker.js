@@ -77,17 +77,18 @@ function isStraight (cards, suit) {
 
     while (i < cards.length) {
         var current = cards[i].v;
-        if (current != last + 1) {
-            start = i;
-            length = 1;
-        } else {
-            length++;
-            if (length > bestStart) {
-                bestStart = start;
-                bestLength = length;
-            }
-        }
-
+        if (current != last) {
+		    if (current != last + 1) {
+              start = i;
+              length = 1;
+            } else {
+                length++;
+                if (length > bestLength) {
+                    bestStart = start;
+                    bestLength = length;
+                }
+            }		
+	    }
         last = cards[i].v;
         i++;
     }
