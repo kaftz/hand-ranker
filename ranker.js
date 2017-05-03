@@ -67,39 +67,26 @@ function isStraight (cards, suit) {
     if (suit) cards = cards.filter(function (card) { return card.s == suit; });
     if (cards.length < 5) return false;
 
-    var isStraight = false;
-    var length = 1;
-    var bestLength = 1;
-    var start = 0;
-    var bestStart = 0;
-    var last = cards[start].v;
-    var i = 1;
-
-    while (i < cards.length) {
-        var current = cards[i].v;
-        if (current != last + 1) {
-            start = i;
-            length = 1;
-        } else {
-            length++;
-            if (length > bestStart) {
-                bestStart = start;
-                bestLength = length;
-            }
+    var last = cards[cards.length - 1];
+    var series = [last];
+    for (var i = cards.length - 2; i >= 0; i--) {
+        var current = cards[i];
+        if (current.v == last.v) continue;
+        if (current.v == 10 && series.length == 3 && cards[0].v == 1) {
+            series.unshift(current);
+            series.push(cards[0]);
+            break;
         }
-
-        last = cards[i].v;
-        i++;
+        
+        if (current.v != last.v - 1) {
+            series = [current];
+        } else {
+            series.unshift(cards[i]);
+            if (series.length == 5) break;
+        }
+        last = current;
     }
-
-    // add ace
-    if (bestLength >= 4 && cards[bestStart + bestLength - 1].v == 13 && cards[0].v == 1) {
-        isStraight = cards.slice(-4).concat(cards[0]);
-    } else if (bestLength > 4) {
-        isStraight = cards.slice(bestStart + bestLength - 5, bestStart + bestLength);
-    }
-
-    return isStraight;
+    return series.length == 5 ? series : false;
 }
 
 function isStraightFlush (cards) {
