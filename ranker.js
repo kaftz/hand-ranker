@@ -1,177 +1,144 @@
 exports.bestHand = bestHand;
 
-// returns best hand, hand type, value
-function bestHand (cards) {
-    // order cards by value
-    cards = cards.sort(function (a, b) { return a.v - b.v; });
-
+// returns best hand, type, value
+function bestHand(cards) {
+    cards = cards.sort((a, b) => a.v - b.v);
     var hand, type, val;
 
-    if (hand = isStraightFlush(cards)) {
-        type = 'straight flush';
-        val = 8;
-    } else if (hand = isXOfKind(cards, 4)) {
-        type = 'four of a kind';
-        val = 7;
-    } else if (hand = isFullHouse(cards)) {
-        type = 'full house';
-        val = 6;
-    } else if (hand = isFlush(cards)) {
-        type = 'flush';
-        val = 5;
-    } else if (hand = isStraight(cards)) {
-        type = 'straight';
-        val = 4;
-    } else if (hand = isXOfKind(cards, 3)) {
-        type = 'three of a kind';
-        val = 3;
-    } else if (hand = isTwoPair(cards)) {
-        type = 'two pair';
-        val = 2;
-    } else if (hand = isXOfKind(cards, 2)) {
-        type = 'two of a kind';
-        val = 1;
-    } else {
-        hand = cards.slice(-5);
-        if (cards[0] == 1) hand = hand.slice(1).concat(cards[0]);
-        type = 'high card';
-        val = 0;
-    }
+    hand = getStraightFlush(cards);
+    if (hand) return { hand: hand, type: 'straight flush', val: 8 };
 
-    return {
-        hand: hand,
-        type: type,
-        val: val
-    };
+    hand = getNOfKindHand(cards, 4);
+    if (hand) return { hand: hand, type: 'four of a kind', val: 7 };
+
+    hand = getFullHouse(cards);
+    if (hand) return { hand: hand, type: 'full house', val: 6 };
+    
+    hand = getFlush(cards);
+    if (hand) return { hand: hand, type: 'flush', val: 5 };
+
+    hand = getStraight(cards);
+    if (hand) return { hand: hand, type: 'straight', val: 4 };
+
+    hand = getNOfKindHand(cards, 3);
+    if (hand) return { hand: hand, type: 'three of a kind', val: 3 };
+
+    hand = getTwoPair(cards);
+    if (hand) return { hand: hand, type: 'two pair', val: 2 };
+
+    hand = getNOfKindHand(cards, 2);
+    if (hand) return { hand: hand, type: 'two of a kind', val: 1 };
+
+    hand = [];
+    if (cards[0].v == 1) hand.push(cards.shift());
+    hand = hand.concat(cards.slice(hand.length - 5).reverse());
+    return { hand: hand, type: 'high card', val: 0 };
 }
 
-function isFlush (cards) {
-    if (cards.length < 5) return false;
-
-    var isFlush = false;
+function getFlush(cards) {
+    if (cards.length < 5) return null;
     var count = { s: 0, h: 0, c: 0, d: 0 };
     for (var i = 0; i < cards.length; i++) count[cards[i].s]++;
-    for (var key in count) if (count[key] > 4) {
-        var suited = cards.filter(function (c) { return c.s == key; });
-
-        if (suited[0].v == 1) suited = suited.concat(suited[0]).slice(1);
-        var isFlush = suited.slice(-5);
-        break;
+    for (var key in count) {
+        if (count[key] > 4) {
+            var suited = cards.filter(c => c.s == key);
+            if (suited[0].v == 1) suited = suited.concat(suited[0]).slice(1);
+            return suited.slice(-5);
+        }
     }
-
-    return isFlush;
+    return null;
 }
 
 // suit optional
-function isStraight (cards, suit) {
-    if (suit) cards = cards.filter(function (card) { return card.s == suit; });
-    if (cards.length < 5) return false;
-
-    var last = cards[cards.length - 1];
-    var series = [last];
+function getStraight(cards, suit) {
+    if (suit) cards = cards.filter(c => c.s == suit);
+    if (cards.length < 5) return null;
+    if (cards[0].v == 1) {
+        cards = cards.concat(clone(cards[0]));
+        cards[cards.length - 1].v = 14;
+    }
+    var series = [cards[cards.length - 1]];
+    var prev = cards[cards.length - 1];
     for (var i = cards.length - 2; i >= 0; i--) {
         var current = cards[i];
-        if (current.v == last.v) continue;
-        if (current.v == 10 && series.length == 3 && cards[0].v == 1) {
+        if (current.v == prev.v) continue;
+        if (current.v == prev.v - 1) {
             series.unshift(current);
-            series.push(cards[0]);
-            break;
-        }
-        
-        if (current.v != last.v - 1) {
+            if (series.length == 5) {
+                if (series[4].v == 14) series[4].v = 1;
+                return series;
+            }
+        } else {
             series = [current];
-        } else {
-            series.unshift(cards[i]);
-            if (series.length == 5) break;
         }
-        last = current;
+        prev = current;
     }
-    return series.length == 5 ? series : false;
+    return null;
 }
 
-function isStraightFlush (cards) {
-    var flush = isFlush(cards);
-    return flush ? isStraight(cards, flush[0].s) : false;
+function getStraightFlush(cards) {
+    var flush = getFlush(cards);
+    if (!flush) return null;
+    return getStraight(cards, flush[0].s);
 }
 
-// returns greatest possible set of x
-function containsXOfKind (cards, x, filter) {
-    if (filter) cards = cards.filter(filter);
-    if (cards.length < x) return false;
-
-    var xOfKind = x == 1 ? cards[0].v : false;
+function getNOfKind(cards, n) {
+    if (n < 2 || n > 4) throw new Error('invalid n');
+    if (cards.length < n) return null;
+    cards = clone(cards);
+    cards.forEach(c => { if (c.v == 1) c.v = 14; });
+    cards = cards.sort((a, b) => a.v - b.v);
+    var prev = cards[cards.length - 1];
     var count = 1;
-    var prevVal = cards[0].v;
-
-    for (var i = 1; i < cards.length; i++) {
-        if (cards[i].v == prevVal) {
+    for (var i = cards.length - 2; i >= 0; i--) {
+        var current = cards[i];
+        if (current.v == prev.v) {
             count++;
+            if (count == n) {
+                var hand = cards.filter(c => c.v == prev.v);
+                hand.forEach(c => { if (c.v == 14) c.v = 1; });
+                return hand;
+            }
         } else {
+            prev = current;
             count = 1;
-            prevVal = cards[i].v;
-        }
-
-        if (count >= x && xOfKind != cards[i].v && xOfKind != 1) xOfKind = cards[i].v;
-    }
-
-    return xOfKind;
-}
-
-function highCard (cards, filter) {
-    if (filter) cards = cards.filter(filter);
-    if (cards.length && cards[0] == 1) return cards[0];
-    return cards.length ? cards[cards.length - 1] : null;
-}
-
-function isXOfKind (cards, x) {
-    var isXOfKind = false;
-    var matchX = containsXOfKind(cards, x);
-
-    if (matchX) {
-        isXOfKind = cards.filter(function (c) { return c.v == matchX; });
-        var added = {};
-        added[matchX] = true;
-
-        while (isXOfKind.length < 5) {
-            var nextCard = highCard(cards, function (c) { return !added[c.v]; });
-            isXOfKind.unshift(nextCard);
-            added[nextCard.v] = true;
         }
     }
-
-    return isXOfKind;
+    return null;
 }
 
-function isFullHouse (cards) {
-    var isFullHouse = false;
-    var matchThree = containsXOfKind(cards, 3);
-
-    if (matchThree) {
-        var matchTwo = containsXOfKind(cards, 2, function (c) { return c.v != matchThree; });
-        
-        if (matchTwo) {
-            // not checking for matching four
-            isFullHouse = cards.filter(function (c) { return c.v == matchTwo; }).slice(-2);
-            isFullHouse = isFullHouse.concat(cards.filter(function (c) { return c.v == matchThree; }));
-        }
-    }
-
-    return isFullHouse;
+function getNOfKindHand(cards, n) {
+    if (cards.length < 5) return null;
+    var hand = getNOfKind(cards, n);
+    if (!hand) return null;
+    var remaining = cards.filter(c => c.v != hand[0].v);
+    if (remaining[0].v == 1) hand.push(remaining.shift());
+    hand = hand.concat(remaining.slice(hand.length - 5).reverse());
+    return hand;
 }
 
-function isTwoPair (cards) {
-    var isTwoPair = false
-    var matchTwo = containsXOfKind(cards, 2);
+function getFullHouse(cards) {
+    var three = getNOfKind(cards, 3);
+    if (!three) return null;
+    var two = getNOfKind(cards.filter(c => c.v != three[0].v), 2);
+    if (!two) return null;
+    return three.concat(two);
+}
 
-    if (matchTwo) {
-        var matchTwoMore = containsXOfKind(cards, 2, function (c) { return c.v != matchTwo; });
+function getTwoPair(cards) {
+    if (cards.length < 5) return null;
+    var firstTwo = getNOfKind(cards, 2);
+    if (!firstTwo) return null;
+    var secondTwo = getNOfKind(cards.filter(c => c.v != firstTwo[0].v), 2);
+    if (!secondTwo) return null;
+    var hand = firstTwo.concat(secondTwo);
+    var remaining = cards.filter(c => c.v != firstTwo[0].v && c.v != secondTwo[0].v);
+    hand.push(remaining[0].v == 1 ? remaining[0] : remaining[remaining.length - 1]);
+    return hand;
+}
 
-        if (matchTwoMore) {
-            // not checking for matching three or more
-            isTwoPair = cards.filter(function (c) { return c.v == matchTwo || c.v == matchTwoMore; });
-            isTwoPair.unshift(highCard(cards, function (c) { return c.v != matchTwo && c.v != matchTwoMore; }));
-        }
-    }
 
-    return isTwoPair;
+// utils
+function clone(o) {
+    return JSON.parse(JSON.stringify(o));
 }
